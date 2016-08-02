@@ -1,6 +1,5 @@
 import numpy as np
 import threading,Queue
-import logging
 from time import sleep
 from time import time as TimeNow
 from datetime import datetime
@@ -11,7 +10,7 @@ import pylab as plb
 #Globals:
 PulsarMonitorOn = True			#If True, Pulsar monitor is switched on, False otherwise
 PulsarRefreshTime = 1000		#Refresh time of pulsar monitor thread
-utc_directory = "/data/mopsr/archives/"
+
 
 def Observing():
 	""""Function that returns a bool whether observation is running"""
@@ -21,15 +20,14 @@ def Observing():
 def UpdatePulsarList(queue,PulsarRefreshTime,boresight_ra,boresight_dec,
 			utc='Now'):
 	""" Function to be executed by a thread, computes whether pulsar might be visible in a fanbeam.
-	    Goes through an infinite loop, executes every 'PulsarRefreshTime', and puts output in queue,
-	    (replaces in case queue is not empty)
+	    
 		Args:
-			queue (Queue.Queue instance): Queue that holds pulsar object (see Stage1Filter.py)
+			queue (Queue.Queue instance): Queue that 
 			PulsarRefreshTime (int): Wait time for 
 			boresight_ra (float): RA of boresight
 			boresight_dec (float): Dec of boresight
 		Returns:
-			(None)
+			None
 			
 	"""
 	print "Pulsar List Thread spawned"
@@ -56,7 +54,7 @@ def DatetimeToStr(DatetimeUTC):
 	return datetime.strftime(DatetimeUTC,fmt)
 
 
-def get_boresight(utc):
+def GetBoresight(utc):
         """Function that returns the boresight of telescope at the particular observation.
 	
 	Args:
@@ -83,28 +81,7 @@ def get_boresight(utc):
                 return ra,dec
 
 
-def get_obs_info(utc):
-	"""Funtion that returns obs.info
-
-	Args:
-		utc (str): format yyyy-mm-dd-hh-mm-ss should be the start UTC of observation!
-
-	Returns:
-		obs_info (dict): Dictionary with keys being the first column of 
-						 obs.info file, and values the second column
-	"""
-	obs_info={}
-	with open(utc_directory+utc+"/obs.info") as o:
-		for line in o:
-			if line[0] not in ["\n","#"]:
-				i = line.split(" ")
-				if i[-1].rstrip():
-					obs_info[i[0]] = i[-1].rstrip()
-				else:
-					obs_info[i[0]] = " "
-	return obs_info
-
-def get_candidates(i):
+def GetCandidates(i):
 	"""Function that returns HEIMDAL candidates to main"""
 	mask=np.where((all_candidates[:,2]>i) & (all_candidates[:,2]<i+4))
 	print "From time %s to time %s" %(all_candidates[:,2][mask].max(),all_candidates[:,2][mask].min())
@@ -132,7 +109,7 @@ def RealTimePlot(queue):
 all_candidates=np.loadtxt("/data/mopsr/results/2016-07-16-08:16:21/all_candidates.dat")
 if __name__=="__main__":
 	start_utc = "2016-07-16-08:16:21"
-	boresight_ra , boresight_dec = get_boresight(start_utc)
+	boresight_ra , boresight_dec = GetBoresight(start_utc)
 	utc_now = datetime.utcnow()
 	utc_now = DatetimeToStr(utc_now)
 	if PulsarMonitorOn:
@@ -172,7 +149,7 @@ if __name__=="__main__":
 			#print "no data available yet"
 		utc_now = datetime.utcnow()
 		#if TimeNow()-t > 0.5:
-		HeimdalCandidates = get_candidates(i) # 4 second Heimdal candidates
+		HeimdalCandidates = GetCandidates(i) # 4 second Heimdal candidates
 		i+=4
 		print "Got Heimdal Candidates"
 		#t=TimeNow()
@@ -183,7 +160,7 @@ if __name__=="__main__":
 			if filtered_candidates is not None:
 				print filtered_candidates.shape
 				lst.append(filtered_candidates.shape[0])
-				cands.append(filtered_candidates)
+				cands.append(filtered_candidates
 				#PlottingQueue.put(filtered_candidates.shape[0])
 			else:
 				lst.append(0)

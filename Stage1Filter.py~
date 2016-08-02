@@ -88,7 +88,7 @@ def CandidateFilter(candidates,PulsarList):
 			np.array: Array of the good candidates
 	"""
 	GoodCandidates = ThresholdFilter(candidates)
-	if PulsarList:
+	if len(PulsarList) == 0:
 		""" No pulsars in FOV """
 		return GoodCandidates
 	else:
