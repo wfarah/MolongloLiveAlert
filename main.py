@@ -2,30 +2,32 @@ import numpy as np
 import threading,Queue
 import logging
 from time import sleep
-from time import time as TimeNow
+from time import time as timeNow
 from datetime import datetime
 import Stage1Filter
 import pylab as plb
 
 
 #Globals:
-PulsarMonitorOn = True			#If True, Pulsar monitor is switched on, False otherwise
-PulsarRefreshTime = 1000		#Refresh time of pulsar monitor thread
+pulsar_monitor_on = True			#If True, Pulsar monitor is switched on, False otherwise
+pulsar_refresh_time = 1000		#Refresh time of pulsar monitor thread
 utc_directory = "/data/mopsr/archives/"
+plotting_thread_on = True			#If True, plotting thread will be activated
 
-def Observing():
+
+def observing():
 	""""Function that returns a bool whether observation is running"""
 	return True
 
 
-def UpdatePulsarList(queue,PulsarRefreshTime,boresight_ra,boresight_dec,
+def updatePulsarList(queue,pulsar_refresh_time,boresight_ra,boresight_dec,
 			utc='Now'):
 	""" Function to be executed by a thread, computes whether pulsar might be visible in a fanbeam.
-	    Goes through an infinite loop, executes every 'PulsarRefreshTime', and puts output in queue,
+	    Goes through an infinite loop, executes every 'pulsar_refresh_time', and puts output in queue,
 	    (replaces in case queue is not empty)
 		Args:
 			queue (Queue.Queue instance): Queue that holds pulsar object (see Stage1Filter.py)
-			PulsarRefreshTime (int): Wait time for 
+			pulsar_refresh_time (int): Wait time for 
 			boresight_ra (float): RA of boresight
 			boresight_dec (float): Dec of boresight
 		Returns:
@@ -34,29 +36,29 @@ def UpdatePulsarList(queue,PulsarRefreshTime,boresight_ra,boresight_dec,
 	"""
 	print "Pulsar List Thread spawned"
 	while True:
-		sleep(PulsarRefreshTime)
+		sleep(pulsar_refresh_time)
 		print "Thread woke up, fetching data"
 		if utc=='Now':
 			utc = datetime.utcnow()
-			utc = DatetimeToStr(utc)
+			utc = datetimeToStr(utc)
 		if queue.empty():	#Ensures only 1 pulsar list in queue
-			pulsar_list = Stage1Filter.PotentialPulsars(utc,boresight_ra,boresight_dec)
+			pulsar_list = Stage1Filter.getPotentialPulsars(utc,boresight_ra,boresight_dec)
 			queue.put(pulsar_list)
 			queue.task_done()
 		else:
-			pulsar_list = Stage1Filter.PotentialPulsars(utc,boresight_ra,boresight_dec)
+			pulsar_list = Stage1Filter.getPotentialPulsars(utc,boresight_ra,boresight_dec)
 			_ = queue.get()
 			queue.put(pulsar_list)
 			queue.task_done()
 		print "task done, data in queue"
 
-def DatetimeToStr(DatetimeUTC):
+def datetimeToStr(datetime_utc):
 	"""Function that convert datetime object to str with specific format"""
 	fmt = "%Y-%m-%d-%H:%M:%S"
-	return datetime.strftime(DatetimeUTC,fmt)
+	return datetime.strftime(datetime_utc,fmt)
 
 
-def get_boresight(utc):
+def getBoresight(utc):
         """Function that returns the boresight of telescope at the particular observation.
 	
 	Args:
@@ -83,7 +85,7 @@ def get_boresight(utc):
                 return ra,dec
 
 
-def get_obs_info(utc):
+def getObsInfo(utc):
 	"""Funtion that returns obs.info
 
 	Args:
@@ -104,22 +106,22 @@ def get_obs_info(utc):
 					obs_info[i[0]] = " "
 	return obs_info
 
-def get_candidates(i):
+def getCandidates(i):
 	"""Function that returns HEIMDAL candidates to main"""
 	mask=np.where((all_candidates[:,2]>i) & (all_candidates[:,2]<i+4))
 	print "From time %s to time %s" %(all_candidates[:,2][mask].max(),all_candidates[:,2][mask].min())
 	return all_candidates[mask]
 
 
-def RealTimePlot(queue):
-	PlotArray = []
+def realTimePlot(queue):
+	plot_array = []
 	eps=10**(-2)
 	plb.ion()
 	while True:
 		sleep(0.05)
-		PlotArray.append(queue.get()+eps)
+		plot_array.append(queue.get()+eps)
 		plb.clf()
-		plb.bar(range(1,1+len(PlotArray)),PlotArray)
+		plb.bar(range(1,1+len(plot_array)),plot_array)
 		plb.title("Candidate Rate")
 		#plb.ylim(-1,np.max(PlotArray))
 		plb.draw()
@@ -132,62 +134,66 @@ def RealTimePlot(queue):
 all_candidates=np.loadtxt("/data/mopsr/results/2016-07-16-08:16:21/all_candidates.dat")
 if __name__=="__main__":
 	start_utc = "2016-07-16-08:16:21"
-	boresight_ra , boresight_dec = get_boresight(start_utc)
+	boresight_ra , boresight_dec = getBoresight(start_utc)
 	utc_now = datetime.utcnow()
-	utc_now = DatetimeToStr(utc_now)
-	if PulsarMonitorOn:
-		PulsarList = Stage1Filter.PotentialPulsars(utc_now,boresight_ra,boresight_dec)
+	utc_now = datetimeToStr(utc_now)
+	if pulsar_monitor_on:
+		pulsar_list = Stage1Filter.getPotentialPulsars(utc_now,boresight_ra,boresight_dec)
 		
-		PulsarListQueue = Queue.Queue()
-		PulsarMonitorThread = threading.Thread(name = 'PulsarMonitorThread', 
-				   target=UpdatePulsarList,
-				   args=(PulsarListQueue,PulsarRefreshTime,boresight_ra,boresight_dec,))
-		PulsarMonitorThread.setDaemon(True)
+		pulsar_list_queue = Queue.Queue()
+		pulsar_monitor_thread = threading.Thread(name = 'PulsarMonitorThread', 
+				   target=updatePulsarList,
+				   args=(pulsar_list_queue,pulsar_refresh_time,boresight_ra,boresight_dec,))
+		pulsar_monitor_thread.setDaemon(True)
 	else:
-		PulsarList = []
+		pulsar_list = []
 	
-	PlottingQueue = Queue.Queue()
-	PlottingThread = threading.Thread(name = 'RealTimePlot', target=RealTimePlot,
-			   args=(PlottingQueue,))
-	PlottingThread.setDaemon(True)
+	if plotting_thread_on:
+		import pylab as plb
+		plotting_queue = Queue.Queue()
+		plotting_thread = threading.Thread(name = 'realTimePlot', target=realTimePlot,
+				   args=(plotting_queue,))
+		plotting_thread.setDaemon(True)
 	
 	#Listens for socket to commence observation
 	#start_observing = socket_listen	
-	if PulsarMonitorOn:
-		PulsarMonitorThread.start()
-	PlottingThread.start()
-	t=TimeNow()		#Testing
+	if pulsar_monitor_on:
+		pulsar_monitor_thread.start()
+	if plotting_thread_on:
+		plotting_thread.start()
+	t=timeNow()		#Testing
 	i=0			#Testing
 	observing = True	#Testing
 	lst=[]			#Testing
 	cands=[]
-	while Observing:
+	while observing:
 		#print "iterating"
 		sleep(0.001)
-		if not PulsarListQueue.empty() and PulsarMonitorOn:
-			PulsarList = PulsarListQueue.get()
+		if not pulsar_list_queue.empty() and pulsar_monitor_on:
+			pulsar_list = pulsar_list_queue.get()
 			print "Got data from Pulsar thread"
 		else:
 			pass
 			#print "no data available yet"
 		utc_now = datetime.utcnow()
-		#if TimeNow()-t > 0.5:
-		HeimdalCandidates = get_candidates(i) # 4 second Heimdal candidates
+		#if timeNow()-t > 0.5:
+		heimdal_candidates = getCandidates(i) # 4 second Heimdal candidates
 		i+=4
 		print "Got Heimdal Candidates"
-		#t=TimeNow()
+		#t=timeNow()
 		#else:
-		#HeimdalCandidates = "empty"
-		if HeimdalCandidates is not "empty":
-			filtered_candidates = Stage1Filter.CandidateFilter(HeimdalCandidates,PulsarList)
+		#heimdal_candidates = "empty"
+		if heimdal_candidates is not "empty":
+			filtered_candidates = Stage1Filter.candidateFilter(heimdal_candidates,pulsar_list)
 			if filtered_candidates is not None:
 				print filtered_candidates.shape
 				lst.append(filtered_candidates.shape[0])
 				cands.append(filtered_candidates)
-				#PlottingQueue.put(filtered_candidates.shape[0])
+				if plotting_thread_on:
+					plotting_queue.put(filtered_candidates.shape[0])
 			else:
 				lst.append(0)
-				#PlottingQueue.put(0)
+				#plotting_queue.put(0)
 			print "Processing"
 		"""Candidates after the first stage filter"""
 		
