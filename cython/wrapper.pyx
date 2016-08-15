@@ -26,6 +26,12 @@ cdef pointer_to_numpy_array(void * ptr, np.npy_intp size):
     PyArray_ENABLEFLAGS(arr, np.NPY_OWNDATA)
     return arr
 
+cdef pointer_to_numpy_array_long(void * ptr, np.npy_intp size):
+    cdef np.ndarray[np.long_t, ndim=1] arr =\
+            np.PyArray_SimpleNewFromData(1, &size, np.NPY_LONG, ptr)
+    PyArray_ENABLEFLAGS(arr,np.NPY_OWNDATA)
+    return arr
+
 
 def wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,int width, float dm):
     cdef long * time_series
@@ -42,4 +48,12 @@ def wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,int widt
     convolve(time_series_norm, nsamp_read, width, convolved)    #Convolves with box car of width=width, outputs convolved
     free(time_series_norm)
     to_python = pointer_to_numpy_array(convolved, nsamp_read)    #No need to free this, python takes control of it
+    return to_python
+
+def dedisp_wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,float dm):
+    """ Wrapper function that returns dedispersed time_series """
+    cdef long * time_series
+    time_series = <long*>malloc(nsamp_read * sizeof(long))
+    get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)
+    to_python = pointer_to_numpy_array_long(time_series,nsamp_read)
     return to_python

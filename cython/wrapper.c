@@ -1187,7 +1187,9 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'wrapper' */
 static PyObject *__pyx_f_7wrapper_pointer_to_numpy_array(void *, npy_intp); /*proto*/
+static PyObject *__pyx_f_7wrapper_pointer_to_numpy_array_long(void *, npy_intp); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_float = { "float", NULL, sizeof(float), { 0 }, 0, 'R', 0, 0 };
+static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_5numpy_long_t = { "long_t", NULL, sizeof(__pyx_t_5numpy_long_t), { 0 }, 0, IS_UNSIGNED(__pyx_t_5numpy_long_t) ? 'U' : 'I', IS_UNSIGNED(__pyx_t_5numpy_long_t), 0 };
 #define __Pyx_MODULE_NAME "wrapper"
 int __pyx_module_is_main_wrapper = 0;
 
@@ -1214,6 +1216,7 @@ static const char __pyx_k_nsamp_read[] = "nsamp_read";
 static const char __pyx_k_nsamp_skip[] = "nsamp_skip";
 static const char __pyx_k_time_series[] = "time_series";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
+static const char __pyx_k_dedisp_wrapper[] = "dedisp_wrapper";
 static const char __pyx_k_time_series_norm[] = "time_series_norm";
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static const char __pyx_k_home_wfarah_cython_dedisp_cytho[] = "/home/wfarah/cython/dedisp/cython/wrapper.pyx";
@@ -1228,6 +1231,7 @@ static PyObject *__pyx_kp_u_Non_native_byte_order_not_suppor;
 static PyObject *__pyx_n_s_RuntimeError;
 static PyObject *__pyx_n_s_ValueError;
 static PyObject *__pyx_n_s_convolved;
+static PyObject *__pyx_n_s_dedisp_wrapper;
 static PyObject *__pyx_n_s_dm;
 static PyObject *__pyx_n_s_file_direc;
 static PyObject *__pyx_kp_s_home_wfarah_cython_dedisp_cytho;
@@ -1250,6 +1254,7 @@ static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_width;
 static PyObject *__pyx_n_s_wrapper;
 static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, char *__pyx_v_file_direc, unsigned long __pyx_v_nsamp_skip, int __pyx_v_nsamp_read, int __pyx_v_width, float __pyx_v_dm); /* proto */
+static PyObject *__pyx_pf_7wrapper_2dedisp_wrapper(CYTHON_UNUSED PyObject *__pyx_self, char *__pyx_v_file_direc, unsigned long __pyx_v_nsamp_skip, int __pyx_v_nsamp_read, float __pyx_v_dm); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static PyObject *__pyx_tuple_;
@@ -1259,7 +1264,9 @@ static PyObject *__pyx_tuple__4;
 static PyObject *__pyx_tuple__5;
 static PyObject *__pyx_tuple__6;
 static PyObject *__pyx_tuple__7;
+static PyObject *__pyx_tuple__9;
 static PyObject *__pyx_codeobj__8;
+static PyObject *__pyx_codeobj__10;
 
 /* "wrapper.pyx":20
  *     float median(long x[], int n)
@@ -1320,7 +1327,7 @@ static PyObject *__pyx_f_7wrapper_pointer_to_numpy_array(void *__pyx_v_ptr, npy_
  *     PyArray_ENABLEFLAGS(arr, np.NPY_OWNDATA)
  *     return arr             # <<<<<<<<<<<<<<
  * 
- * 
+ * cdef pointer_to_numpy_array_long(void * ptr, np.npy_intp size):
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(((PyObject *)__pyx_v_arr));
@@ -1356,7 +1363,102 @@ static PyObject *__pyx_f_7wrapper_pointer_to_numpy_array(void *__pyx_v_ptr, npy_
   return __pyx_r;
 }
 
-/* "wrapper.pyx":30
+/* "wrapper.pyx":29
+ *     return arr
+ * 
+ * cdef pointer_to_numpy_array_long(void * ptr, np.npy_intp size):             # <<<<<<<<<<<<<<
+ *     cdef np.ndarray[np.long_t, ndim=1] arr =\
+ *             np.PyArray_SimpleNewFromData(1, &size, np.NPY_LONG, ptr)
+ */
+
+static PyObject *__pyx_f_7wrapper_pointer_to_numpy_array_long(void *__pyx_v_ptr, npy_intp __pyx_v_size) {
+  PyArrayObject *__pyx_v_arr = 0;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_arr;
+  __Pyx_Buffer __pyx_pybuffer_arr;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyArrayObject *__pyx_t_2 = NULL;
+  __Pyx_RefNannySetupContext("pointer_to_numpy_array_long", 0);
+  __pyx_pybuffer_arr.pybuffer.buf = NULL;
+  __pyx_pybuffer_arr.refcount = 0;
+  __pyx_pybuffernd_arr.data = NULL;
+  __pyx_pybuffernd_arr.rcbuffer = &__pyx_pybuffer_arr;
+
+  /* "wrapper.pyx":31
+ * cdef pointer_to_numpy_array_long(void * ptr, np.npy_intp size):
+ *     cdef np.ndarray[np.long_t, ndim=1] arr =\
+ *             np.PyArray_SimpleNewFromData(1, &size, np.NPY_LONG, ptr)             # <<<<<<<<<<<<<<
+ *     PyArray_ENABLEFLAGS(arr,np.NPY_OWNDATA)
+ *     return arr
+ */
+  __pyx_t_1 = PyArray_SimpleNewFromData(1, (&__pyx_v_size), NPY_LONG, __pyx_v_ptr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_2 = ((PyArrayObject *)__pyx_t_1);
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_arr.rcbuffer->pybuffer, (PyObject*)__pyx_t_2, &__Pyx_TypeInfo_nn___pyx_t_5numpy_long_t, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_arr = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_arr.rcbuffer->pybuffer.buf = NULL;
+      __PYX_ERR(0, 30, __pyx_L1_error)
+    } else {__pyx_pybuffernd_arr.diminfo[0].strides = __pyx_pybuffernd_arr.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_arr.diminfo[0].shape = __pyx_pybuffernd_arr.rcbuffer->pybuffer.shape[0];
+    }
+  }
+  __pyx_t_2 = 0;
+  __pyx_v_arr = ((PyArrayObject *)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "wrapper.pyx":32
+ *     cdef np.ndarray[np.long_t, ndim=1] arr =\
+ *             np.PyArray_SimpleNewFromData(1, &size, np.NPY_LONG, ptr)
+ *     PyArray_ENABLEFLAGS(arr,np.NPY_OWNDATA)             # <<<<<<<<<<<<<<
+ *     return arr
+ * 
+ */
+  PyArray_ENABLEFLAGS(((PyArrayObject *)__pyx_v_arr), NPY_OWNDATA);
+
+  /* "wrapper.pyx":33
+ *             np.PyArray_SimpleNewFromData(1, &size, np.NPY_LONG, ptr)
+ *     PyArray_ENABLEFLAGS(arr,np.NPY_OWNDATA)
+ *     return arr             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(((PyObject *)__pyx_v_arr));
+  __pyx_r = ((PyObject *)__pyx_v_arr);
+  goto __pyx_L0;
+
+  /* "wrapper.pyx":29
+ *     return arr
+ * 
+ * cdef pointer_to_numpy_array_long(void * ptr, np.npy_intp size):             # <<<<<<<<<<<<<<
+ *     cdef np.ndarray[np.long_t, ndim=1] arr =\
+ *             np.PyArray_SimpleNewFromData(1, &size, np.NPY_LONG, ptr)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_arr.rcbuffer->pybuffer);
+  __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
+  __Pyx_AddTraceback("wrapper.pointer_to_numpy_array_long", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  goto __pyx_L2;
+  __pyx_L0:;
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_arr.rcbuffer->pybuffer);
+  __pyx_L2:;
+  __Pyx_XDECREF((PyObject *)__pyx_v_arr);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "wrapper.pyx":36
  * 
  * 
  * def wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,int width, float dm):             # <<<<<<<<<<<<<<
@@ -1399,26 +1501,26 @@ static PyObject *__pyx_pw_7wrapper_1wrapper(PyObject *__pyx_self, PyObject *__py
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nsamp_skip)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, 1); __PYX_ERR(0, 30, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, 1); __PYX_ERR(0, 36, __pyx_L3_error)
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nsamp_read)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, 2); __PYX_ERR(0, 30, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, 2); __PYX_ERR(0, 36, __pyx_L3_error)
         }
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_width)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, 3); __PYX_ERR(0, 30, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, 3); __PYX_ERR(0, 36, __pyx_L3_error)
         }
         case  4:
         if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dm)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, 4); __PYX_ERR(0, 30, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, 4); __PYX_ERR(0, 36, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "wrapper") < 0)) __PYX_ERR(0, 30, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "wrapper") < 0)) __PYX_ERR(0, 36, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 5) {
       goto __pyx_L5_argtuple_error;
@@ -1429,15 +1531,15 @@ static PyObject *__pyx_pw_7wrapper_1wrapper(PyObject *__pyx_self, PyObject *__py
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
       values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
     }
-    __pyx_v_file_direc = __Pyx_PyObject_AsString(values[0]); if (unlikely((!__pyx_v_file_direc) && PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L3_error)
-    __pyx_v_nsamp_skip = __Pyx_PyInt_As_unsigned_long(values[1]); if (unlikely((__pyx_v_nsamp_skip == (unsigned long)-1) && PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L3_error)
-    __pyx_v_nsamp_read = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_nsamp_read == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L3_error)
-    __pyx_v_width = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_width == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L3_error)
-    __pyx_v_dm = __pyx_PyFloat_AsFloat(values[4]); if (unlikely((__pyx_v_dm == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L3_error)
+    __pyx_v_file_direc = __Pyx_PyObject_AsString(values[0]); if (unlikely((!__pyx_v_file_direc) && PyErr_Occurred())) __PYX_ERR(0, 36, __pyx_L3_error)
+    __pyx_v_nsamp_skip = __Pyx_PyInt_As_unsigned_long(values[1]); if (unlikely((__pyx_v_nsamp_skip == (unsigned long)-1) && PyErr_Occurred())) __PYX_ERR(0, 36, __pyx_L3_error)
+    __pyx_v_nsamp_read = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_nsamp_read == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 36, __pyx_L3_error)
+    __pyx_v_width = __Pyx_PyInt_As_int(values[3]); if (unlikely((__pyx_v_width == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 36, __pyx_L3_error)
+    __pyx_v_dm = __pyx_PyFloat_AsFloat(values[4]); if (unlikely((__pyx_v_dm == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 36, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 30, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("wrapper", 1, 5, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 36, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("wrapper.wrapper", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -1462,7 +1564,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("wrapper", 0);
 
-  /* "wrapper.pyx":32
+  /* "wrapper.pyx":38
  * def wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,int width, float dm):
  *     cdef long * time_series
  *     time_series = <long*>malloc(nsamp_read * sizeof(long))             # <<<<<<<<<<<<<<
@@ -1471,7 +1573,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   __pyx_v_time_series = ((long *)malloc((__pyx_v_nsamp_read * (sizeof(long)))));
 
-  /* "wrapper.pyx":33
+  /* "wrapper.pyx":39
  *     cdef long * time_series
  *     time_series = <long*>malloc(nsamp_read * sizeof(long))
  *     get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)    #Loads filterbank, dedisp and frequency crunch             # <<<<<<<<<<<<<<
@@ -1480,7 +1582,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   get_time_series(__pyx_v_file_direc, __pyx_v_dm, __pyx_v_nsamp_skip, __pyx_v_nsamp_read, __pyx_v_time_series);
 
-  /* "wrapper.pyx":35
+  /* "wrapper.pyx":41
  *     get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)    #Loads filterbank, dedisp and frequency crunch
  *     cdef float med,mad
  *     MAD_1D(time_series, nsamp_read, &med, &mad) #Computes the median and MAD of time series             # <<<<<<<<<<<<<<
@@ -1489,7 +1591,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   MAD_1D(__pyx_v_time_series, __pyx_v_nsamp_read, (&__pyx_v_med), (&__pyx_v_mad));
 
-  /* "wrapper.pyx":37
+  /* "wrapper.pyx":43
  *     MAD_1D(time_series, nsamp_read, &med, &mad) #Computes the median and MAD of time series
  *     cdef float * time_series_norm
  *     time_series_norm = <float *>malloc(nsamp_read * sizeof(float))             # <<<<<<<<<<<<<<
@@ -1498,7 +1600,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   __pyx_v_time_series_norm = ((float *)malloc((__pyx_v_nsamp_read * (sizeof(float)))));
 
-  /* "wrapper.pyx":38
+  /* "wrapper.pyx":44
  *     cdef float * time_series_norm
  *     time_series_norm = <float *>malloc(nsamp_read * sizeof(float))
  *     norm_baseline(time_series, nsamp_read, med, mad, time_series_norm)  #Normalizes and removes baseline, output is time_series_norm casted to float             # <<<<<<<<<<<<<<
@@ -1507,7 +1609,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   norm_baseline(__pyx_v_time_series, __pyx_v_nsamp_read, __pyx_v_med, __pyx_v_mad, __pyx_v_time_series_norm);
 
-  /* "wrapper.pyx":39
+  /* "wrapper.pyx":45
  *     time_series_norm = <float *>malloc(nsamp_read * sizeof(float))
  *     norm_baseline(time_series, nsamp_read, med, mad, time_series_norm)  #Normalizes and removes baseline, output is time_series_norm casted to float
  *     free(time_series)   #ALWAYS FREE MEMORY             # <<<<<<<<<<<<<<
@@ -1516,7 +1618,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   free(__pyx_v_time_series);
 
-  /* "wrapper.pyx":41
+  /* "wrapper.pyx":47
  *     free(time_series)   #ALWAYS FREE MEMORY
  *     cdef float * convolved
  *     convolved = <float*>malloc(nsamp_read * sizeof(float))             # <<<<<<<<<<<<<<
@@ -1525,7 +1627,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   __pyx_v_convolved = ((float *)malloc((__pyx_v_nsamp_read * (sizeof(float)))));
 
-  /* "wrapper.pyx":42
+  /* "wrapper.pyx":48
  *     cdef float * convolved
  *     convolved = <float*>malloc(nsamp_read * sizeof(float))
  *     convolve(time_series_norm, nsamp_read, width, convolved)    #Convolves with box car of width=width, outputs convolved             # <<<<<<<<<<<<<<
@@ -1534,7 +1636,7 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   convolve(__pyx_v_time_series_norm, __pyx_v_nsamp_read, __pyx_v_width, __pyx_v_convolved);
 
-  /* "wrapper.pyx":43
+  /* "wrapper.pyx":49
  *     convolved = <float*>malloc(nsamp_read * sizeof(float))
  *     convolve(time_series_norm, nsamp_read, width, convolved)    #Convolves with box car of width=width, outputs convolved
  *     free(time_series_norm)             # <<<<<<<<<<<<<<
@@ -1543,28 +1645,31 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
  */
   free(__pyx_v_time_series_norm);
 
-  /* "wrapper.pyx":44
+  /* "wrapper.pyx":50
  *     convolve(time_series_norm, nsamp_read, width, convolved)    #Convolves with box car of width=width, outputs convolved
  *     free(time_series_norm)
  *     to_python = pointer_to_numpy_array(convolved, nsamp_read)    #No need to free this, python takes control of it             # <<<<<<<<<<<<<<
  *     return to_python
+ * 
  */
-  __pyx_t_1 = __pyx_f_7wrapper_pointer_to_numpy_array(__pyx_v_convolved, __pyx_v_nsamp_read); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_7wrapper_pointer_to_numpy_array(__pyx_v_convolved, __pyx_v_nsamp_read); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_to_python = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "wrapper.pyx":45
+  /* "wrapper.pyx":51
  *     free(time_series_norm)
  *     to_python = pointer_to_numpy_array(convolved, nsamp_read)    #No need to free this, python takes control of it
  *     return to_python             # <<<<<<<<<<<<<<
+ * 
+ * def dedisp_wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,float dm):
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_to_python);
   __pyx_r = __pyx_v_to_python;
   goto __pyx_L0;
 
-  /* "wrapper.pyx":30
+  /* "wrapper.pyx":36
  * 
  * 
  * def wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,int width, float dm):             # <<<<<<<<<<<<<<
@@ -1576,6 +1681,159 @@ static PyObject *__pyx_pf_7wrapper_wrapper(CYTHON_UNUSED PyObject *__pyx_self, c
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_AddTraceback("wrapper.wrapper", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_to_python);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "wrapper.pyx":53
+ *     return to_python
+ * 
+ * def dedisp_wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,float dm):             # <<<<<<<<<<<<<<
+ *     """ Wrapper function that returns dedispersed time_series """
+ *     cdef long * time_series
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7wrapper_3dedisp_wrapper(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_7wrapper_2dedisp_wrapper[] = " Wrapper function that returns dedispersed time_series ";
+static PyMethodDef __pyx_mdef_7wrapper_3dedisp_wrapper = {"dedisp_wrapper", (PyCFunction)__pyx_pw_7wrapper_3dedisp_wrapper, METH_VARARGS|METH_KEYWORDS, __pyx_doc_7wrapper_2dedisp_wrapper};
+static PyObject *__pyx_pw_7wrapper_3dedisp_wrapper(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  char *__pyx_v_file_direc;
+  unsigned long __pyx_v_nsamp_skip;
+  int __pyx_v_nsamp_read;
+  float __pyx_v_dm;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("dedisp_wrapper (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_file_direc,&__pyx_n_s_nsamp_skip,&__pyx_n_s_nsamp_read,&__pyx_n_s_dm,0};
+    PyObject* values[4] = {0,0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_file_direc)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nsamp_skip)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("dedisp_wrapper", 1, 4, 4, 1); __PYX_ERR(0, 53, __pyx_L3_error)
+        }
+        case  2:
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_nsamp_read)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("dedisp_wrapper", 1, 4, 4, 2); __PYX_ERR(0, 53, __pyx_L3_error)
+        }
+        case  3:
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dm)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("dedisp_wrapper", 1, 4, 4, 3); __PYX_ERR(0, 53, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "dedisp_wrapper") < 0)) __PYX_ERR(0, 53, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+    }
+    __pyx_v_file_direc = __Pyx_PyObject_AsString(values[0]); if (unlikely((!__pyx_v_file_direc) && PyErr_Occurred())) __PYX_ERR(0, 53, __pyx_L3_error)
+    __pyx_v_nsamp_skip = __Pyx_PyInt_As_unsigned_long(values[1]); if (unlikely((__pyx_v_nsamp_skip == (unsigned long)-1) && PyErr_Occurred())) __PYX_ERR(0, 53, __pyx_L3_error)
+    __pyx_v_nsamp_read = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_nsamp_read == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 53, __pyx_L3_error)
+    __pyx_v_dm = __pyx_PyFloat_AsFloat(values[3]); if (unlikely((__pyx_v_dm == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 53, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("dedisp_wrapper", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 53, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("wrapper.dedisp_wrapper", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_7wrapper_2dedisp_wrapper(__pyx_self, __pyx_v_file_direc, __pyx_v_nsamp_skip, __pyx_v_nsamp_read, __pyx_v_dm);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7wrapper_2dedisp_wrapper(CYTHON_UNUSED PyObject *__pyx_self, char *__pyx_v_file_direc, unsigned long __pyx_v_nsamp_skip, int __pyx_v_nsamp_read, float __pyx_v_dm) {
+  long *__pyx_v_time_series;
+  PyObject *__pyx_v_to_python = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("dedisp_wrapper", 0);
+
+  /* "wrapper.pyx":56
+ *     """ Wrapper function that returns dedispersed time_series """
+ *     cdef long * time_series
+ *     time_series = <long*>malloc(nsamp_read * sizeof(long))             # <<<<<<<<<<<<<<
+ *     get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)
+ *     to_python = pointer_to_numpy_array_long(time_series,nsamp_read)
+ */
+  __pyx_v_time_series = ((long *)malloc((__pyx_v_nsamp_read * (sizeof(long)))));
+
+  /* "wrapper.pyx":57
+ *     cdef long * time_series
+ *     time_series = <long*>malloc(nsamp_read * sizeof(long))
+ *     get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)             # <<<<<<<<<<<<<<
+ *     to_python = pointer_to_numpy_array_long(time_series,nsamp_read)
+ *     return to_python
+ */
+  get_time_series(__pyx_v_file_direc, __pyx_v_dm, __pyx_v_nsamp_skip, __pyx_v_nsamp_read, __pyx_v_time_series);
+
+  /* "wrapper.pyx":58
+ *     time_series = <long*>malloc(nsamp_read * sizeof(long))
+ *     get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)
+ *     to_python = pointer_to_numpy_array_long(time_series,nsamp_read)             # <<<<<<<<<<<<<<
+ *     return to_python
+ */
+  __pyx_t_1 = __pyx_f_7wrapper_pointer_to_numpy_array_long(__pyx_v_time_series, __pyx_v_nsamp_read); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_v_to_python = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "wrapper.pyx":59
+ *     get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)
+ *     to_python = pointer_to_numpy_array_long(time_series,nsamp_read)
+ *     return to_python             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(__pyx_v_to_python);
+  __pyx_r = __pyx_v_to_python;
+  goto __pyx_L0;
+
+  /* "wrapper.pyx":53
+ *     return to_python
+ * 
+ * def dedisp_wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,float dm):             # <<<<<<<<<<<<<<
+ *     """ Wrapper function that returns dedispersed time_series """
+ *     cdef long * time_series
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("wrapper.dedisp_wrapper", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_to_python);
@@ -3735,6 +3993,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_RuntimeError, __pyx_k_RuntimeError, sizeof(__pyx_k_RuntimeError), 0, 0, 1, 1},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
   {&__pyx_n_s_convolved, __pyx_k_convolved, sizeof(__pyx_k_convolved), 0, 0, 1, 1},
+  {&__pyx_n_s_dedisp_wrapper, __pyx_k_dedisp_wrapper, sizeof(__pyx_k_dedisp_wrapper), 0, 0, 1, 1},
   {&__pyx_n_s_dm, __pyx_k_dm, sizeof(__pyx_k_dm), 0, 0, 1, 1},
   {&__pyx_n_s_file_direc, __pyx_k_file_direc, sizeof(__pyx_k_file_direc), 0, 0, 1, 1},
   {&__pyx_kp_s_home_wfarah_cython_dedisp_cytho, __pyx_k_home_wfarah_cython_dedisp_cytho, sizeof(__pyx_k_home_wfarah_cython_dedisp_cytho), 0, 0, 1, 0},
@@ -3837,17 +4096,29 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__6);
   __Pyx_GIVEREF(__pyx_tuple__6);
 
-  /* "wrapper.pyx":30
+  /* "wrapper.pyx":36
  * 
  * 
  * def wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,int width, float dm):             # <<<<<<<<<<<<<<
  *     cdef long * time_series
  *     time_series = <long*>malloc(nsamp_read * sizeof(long))
  */
-  __pyx_tuple__7 = PyTuple_Pack(11, __pyx_n_s_file_direc, __pyx_n_s_nsamp_skip, __pyx_n_s_nsamp_read, __pyx_n_s_width, __pyx_n_s_dm, __pyx_n_s_time_series, __pyx_n_s_med, __pyx_n_s_mad, __pyx_n_s_time_series_norm, __pyx_n_s_convolved, __pyx_n_s_to_python); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_tuple__7 = PyTuple_Pack(11, __pyx_n_s_file_direc, __pyx_n_s_nsamp_skip, __pyx_n_s_nsamp_read, __pyx_n_s_width, __pyx_n_s_dm, __pyx_n_s_time_series, __pyx_n_s_med, __pyx_n_s_mad, __pyx_n_s_time_series_norm, __pyx_n_s_convolved, __pyx_n_s_to_python); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
-  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(5, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_wfarah_cython_dedisp_cytho, __pyx_n_s_wrapper, 30, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(5, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_wfarah_cython_dedisp_cytho, __pyx_n_s_wrapper, 36, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 36, __pyx_L1_error)
+
+  /* "wrapper.pyx":53
+ *     return to_python
+ * 
+ * def dedisp_wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,float dm):             # <<<<<<<<<<<<<<
+ *     """ Wrapper function that returns dedispersed time_series """
+ *     cdef long * time_series
+ */
+  __pyx_tuple__9 = PyTuple_Pack(6, __pyx_n_s_file_direc, __pyx_n_s_nsamp_skip, __pyx_n_s_nsamp_read, __pyx_n_s_dm, __pyx_n_s_time_series, __pyx_n_s_to_python); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 53, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__9);
+  __Pyx_GIVEREF(__pyx_tuple__9);
+  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(4, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_wfarah_cython_dedisp_cytho, __pyx_n_s_dedisp_wrapper, 53, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -3986,16 +4257,28 @@ PyMODINIT_FUNC PyInit_wrapper(void)
  */
   import_array();
 
-  /* "wrapper.pyx":30
+  /* "wrapper.pyx":36
  * 
  * 
  * def wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,int width, float dm):             # <<<<<<<<<<<<<<
  *     cdef long * time_series
  *     time_series = <long*>malloc(nsamp_read * sizeof(long))
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wrapper_1wrapper, NULL, __pyx_n_s_wrapper); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wrapper_1wrapper, NULL, __pyx_n_s_wrapper); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_wrapper, __pyx_t_1) < 0) __PYX_ERR(0, 30, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_wrapper, __pyx_t_1) < 0) __PYX_ERR(0, 36, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "wrapper.pyx":53
+ *     return to_python
+ * 
+ * def dedisp_wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,float dm):             # <<<<<<<<<<<<<<
+ *     """ Wrapper function that returns dedispersed time_series """
+ *     cdef long * time_series
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7wrapper_3dedisp_wrapper, NULL, __pyx_n_s_wrapper); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_dedisp_wrapper, __pyx_t_1) < 0) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "wrapper.pyx":1
