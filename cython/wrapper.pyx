@@ -7,15 +7,16 @@ cdef extern from "numpy/arrayobject.h":
     void PyArray_ENABLEFLAGS(np.ndarray arr, int flags) # To python to take control of memory block
 
 cdef extern from "functions.c":
-    void dm_delay(float f0, float df, float dm, int nchans, int *d_list)
-    void read_filfile(char * file_direc, unsigned long long skip, int nsamp_read, unsigned char * data)
-    int index_transform(int old_index, int rows, int cols)
-    void get_time_series(char * file_direc, float dm, unsigned long nsamp_skip,int nsamp_read,long * time_series)
-    void convolve(float * time_series, int ndat, int width, float * ans)
-    void norm_baseline(long * time_series, int size, float med, float mad, float * time_series_norm)
     void MAD_1D(long time_series[], int n, float *md, float *mad)
-    float median_float(float x[], int n)
-    float median(long x[], int n)
+    void norm_baseline(long * time_series, int size, float med, float mad, float * time_series_norm)
+    void convolve(float * time_series, int ndat, int width, float * ans)
+    void read_block(char * file_direc, unsigned long  nsamp_skip, int nsamp_read, unsigned char * data)
+    void get_time_series(unsigned char * data, float dm, long * time_series, int nsamp_read)
+    int sampling_bits
+    int nchans
+
+cdef unsigned char * block #Block of Filterbank data. Visible in the c wrapper and c functions scope
+cdef unsigned long nsamp_read
 
 cdef pointer_to_numpy_array(void * ptr, np.npy_intp size):
     '''Convert c pointer to numpy array.
@@ -33,27 +34,60 @@ cdef pointer_to_numpy_array_long(void * ptr, np.npy_intp size):
     return arr
 
 
-def wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,int width, float dm):
+
+def load_block(char * file_direc, unsigned long nsamp_skip, int samples):
+    """ Function that loads block of filterbank data unto memory 
+        Warning: BLOCK SHOULD BE DELETED EXPLICITLY, USING delete_block()
+    """
+    global block,nsamp_read
+    nsamp_read = samples
+
+    block = <unsigned char *>malloc(sampling_bits*nchans*samples/8)
+    read_block(file_direc,nsamp_skip,nsamp_read,block)
+
+def delete_block():
+    """ Function that deletes the filterbank block """
+    free(block)
+
+
+def dedisp_norm_base_conv(int width, float dm):
+    """ Function that dedisperses filterbank block, which is already loaded unto memory with load_block(),
+    into a time series. Time series is normalized, and baseline removed, then convolved with
+    a boxcar of particular width
+    NOTE: LOAD BLOCK FIRST WITH load_block()
+    """
     cdef long * time_series
-    time_series = <long*>malloc(nsamp_read * sizeof(long))
-    get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)    #Loads filterbank, dedisp and frequency crunch
     cdef float med,mad
-    MAD_1D(time_series, nsamp_read, &med, &mad) #Computes the median and MAD of time series
-    cdef float * time_series_norm
-    time_series_norm = <float *>malloc(nsamp_read * sizeof(float))
-    norm_baseline(time_series, nsamp_read, med, mad, time_series_norm)  #Normalizes and removes baseline, output is time_series_norm casted to float
-    free(time_series)   #ALWAYS FREE MEMORY
     cdef float * convolved
+
+    time_series = <long*>malloc(nsamp_read * sizeof(long))
+    get_time_series(block,dm,time_series,nsamp_read) #Dedisp and frequency crunch.
+
+    MAD_1D(time_series,nsamp_read,&med,&mad) #Computes the median and MAD of time series
+
+    time_series_norm = <float *>malloc(nsamp_read * sizeof(float))
+    norm_baseline(time_series,nsamp_read, med, mad, time_series_norm) #Normalizes, removes baseline, output is time_series_norm casted to float
+    free(time_series) #ALWAYS FREE MEMORY
+
     convolved = <float*>malloc(nsamp_read * sizeof(float))
-    convolve(time_series_norm, nsamp_read, width, convolved)    #Convolves with box car of width=width, outputs convolved
+    convolve(time_series_norm,nsamp_read,width,convolved)  #Convolves with box car of width=width
+
     free(time_series_norm)
-    to_python = pointer_to_numpy_array(convolved, nsamp_read)    #No need to free this, python takes control of it
+
+    to_python = pointer_to_numpy_array(convolved,nsamp_read)   #No need to free this, python takes control of it
     return to_python
 
-def dedisp_wrapper(char * file_direc, unsigned long nsamp_skip, int nsamp_read,float dm):
-    """ Wrapper function that returns dedispersed time_series """
+
+
+def dedisp(float dm):
+    """
+    Wrapper function that returns dedispersed time_series
+    NOTE: LOAD BLOCK FIRST WITH load_block()
+    """
     cdef long * time_series
     time_series = <long*>malloc(nsamp_read * sizeof(long))
-    get_time_series(file_direc,dm,nsamp_skip,nsamp_read,time_series)
+    get_time_series(block, dm, time_series, nsamp_read)
     to_python = pointer_to_numpy_array_long(time_series,nsamp_read)
     return to_python
+
+

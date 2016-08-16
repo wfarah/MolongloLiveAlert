@@ -2,6 +2,9 @@ import numpy as np
 from sigpyproc.Readers import FilReader
 from multiprocessing import Pool
 import datetime,os
+from wrapper import wrapper
+from wrapper import dedisp_wrapper
+
 
 """Globals"""
 F1=range(7,13)

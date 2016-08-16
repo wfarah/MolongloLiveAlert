@@ -1,5 +1,14 @@
 #include "functions.h"
 
+
+/* Function to be implemented to update the variables in the
+ * header files */
+/*
+void update_header(){
+}
+*/
+
+/* Function that returns the median of a array of long */
 float median(long x[], int n) {
     int i,j;
     long * temp_arr;
@@ -31,6 +40,7 @@ float median(long x[], int n) {
     }
 }
 
+/* Function that returns the median of an array of floats */
 float median_float(float x[], int n){
     int i,j;
     float * temp_arr;
@@ -62,7 +72,7 @@ float median_float(float x[], int n){
     }
 }
 
-/*  Return the median and the MAD of 1D array */
+/*  Returns the median and the MAD of 1D array */
 void MAD_1D(long time_series[], int n, float *md, float *mad){
     int i;
     float t_median = median(time_series,n);
@@ -96,7 +106,7 @@ void convolve(float * time_series, int ndat, int width, float * ans){
 
 
 
-/* Function that returns dispersion delays */
+/* Function that returns list of dispersion delays */
 void dm_delay(float f0, float df, float dm, int nchans, int *d_list){
   float nu1,nu2,nu1_2,nu2_2,shift;
   int i;
@@ -114,17 +124,19 @@ void dm_delay(float f0, float df, float dm, int nchans, int *d_list){
 /* Function that reads filterbank files, skips nsamp_skip bytes and reads nsamp_read number 
  * samples. data is the pointer to the 1D data, and is column major.
  */
-void read_filfile(char * file_direc, unsigned long long skip, int nsamp_read, unsigned char * data){
+void read_block(char * file_direc, unsigned long  nsamp_skip, int nsamp_read, unsigned char * data){
+    unsigned long long bytes_skip = header_bytes + nsamp_skip*nchans;
     FILE * fptr = fopen(file_direc,"rb");
     if (fptr==NULL){
         printf("Error opening file \n");
         exit(-1);
     }
-    fseek(fptr,skip,SEEK_CUR);
+    fseek(fptr,bytes_skip,SEEK_CUR);
     fread((unsigned char *) data,sampling_bits/8,nchans*nsamp_read,fptr);
     fclose(fptr);
     return;
 }
+
 
 
 /* Performs a transformation of index from row-major to column-major */ 
@@ -137,16 +149,12 @@ int index_transform(int old_index, int rows, int cols){
 }
 
 /* Computes the time_series */
-void get_time_series(char * file_direc, float dm, unsigned long nsamp_skip,int nsamp_read,long * time_series){
+void get_time_series(unsigned char * data, float dm, long * time_series, int nsamp_read){
     int i,j;
     unsigned long index,real_index,sum;
-    unsigned char * data;
-    unsigned long long bytes_skip = header_bytes + nsamp_skip*nchans;
     int d_list[nchans];
 
     dm_delay(f0,df,dm,nchans,d_list);
-    data = malloc(sampling_bits*nchans*nsamp_read/8);
-    read_filfile(file_direc,bytes_skip,nsamp_read,data);
     
 
     for (i=0;i<nsamp_read;i++){
@@ -162,9 +170,25 @@ void get_time_series(char * file_direc, float dm, unsigned long nsamp_skip,int n
         }
         time_series[i] = sum;
     }
-    free(data);
-    return;
+   return;
 }
+/*
+int main(int argc, char **argv){
+    char *file_direc = "/home/wfarah/disp_test/2016-08-05-07:48:39.fil";
+    float dm = 50;
+    unsigned long nsamp_skip = 50972;
+    int nsamp_read = 400;
+    long * time_series;
+    time_series = malloc(nsamp_read * sizeof(long));
+    unsigned char * block;
+    get_time_series(block, dm, time_series, nsamp_skip);
+    free(block);
+    free(time_series);
+
+    return 1;
+}
+*/
+
 
 int main(int argc, char **argv){
     char *file_direc = "/home/wfarah/disp_test/2016-08-05-07:48:39.fil";
@@ -173,7 +197,12 @@ int main(int argc, char **argv){
     int nsamp_read = 400;
     long * time_series;
     time_series = malloc(nsamp_read * sizeof(long));
-    get_time_series(file_direc, dm,nsamp_skip,nsamp_read, time_series);
+    unsigned char * block;
+    block = malloc(sampling_bits*nchans*nsamp_read/8);
+    read_block(file_direc,nsamp_skip,nsamp_read,block);
+    
+    get_time_series(block, dm, time_series, nsamp_read);
+    free(block);
     float med,mad;
     MAD_1D(time_series,nsamp_read,&med,&mad);
     float * time_series_norm;
@@ -190,3 +219,4 @@ int main(int argc, char **argv){
     free(time_series_norm);
     return 1;
 }
+
