@@ -1,7 +1,7 @@
 import numpy as np
 from sigpyproc.Readers import FilReader
 from multiprocessing import Pool
-import datetime,os
+import datetime,os,time
 from wrapper import dedisp
 from wrapper import dedisp_norm_base_conv
 from wrapper import load_block
@@ -96,6 +96,7 @@ def get_power(event):
 	ch3_sum=ch3.sum()
 	ch4_sum=ch4.sum()
 	all_ch=event.sum()
+	print ch1_sum,ch2_sum,ch3_sum,all_ch
 	return ch1_sum,ch2_sum,ch3_sum,ch4_sum,all_ch
 
 
@@ -155,8 +156,6 @@ def get_snr0(width,dispersion_delay):
 	#c=convolve(d,width,backstep,dispersion_delay)
 	c = dedisp_norm_base_conv(width,0.0)
 	sn0=c.max()/np.sqrt(width)
-	if sn0 < 0.1:
-		print sn0
 	return sn0
 
 def mod_index(event,t_crunch=False):    #event should be median subtracted, crunches in time when t_crunch is True
@@ -190,6 +189,7 @@ def timeToExtract(H_w,H_dm):
 	w=2**H_w
 	min_afterEvent=300
 	time_extract=np.max([min_afterEvent,(dispersion_delay+w)*2])
+	print time_extract,dispersion_delay
 	return time_extract,dispersion_delay
 
 
@@ -210,6 +210,7 @@ def process_candidate(in_queue,out_queue):
 		load_block(direc,sample_bin-backstep,int(backstep+time_extract))
 		#dis = dedisp(H_dm)
 		dis = dis-np.median(dis)
+		print np.median(dis)
 		event=dis[:,backstep-(2**H_w)/2:backstep+(2**H_w)/2]
 		ch1,ch2,ch3,ch4,all_ch=get_power(event)
 		if (ch1/all_ch>0.7 or ch2/all_ch>0.7 or ch3/all_ch>0.7 or ch1/all_ch+ch2/all_ch>0.9 or ch1/all_ch+ch3/all_ch>0.9 or ch2/all_ch+ch3/all_ch>0.9):
@@ -241,10 +242,14 @@ def process_candidate(in_queue,out_queue):
 			event=dis[:,nstart:nend]
 			ch1,ch2,ch3,ch4,all_ch=get_power(event)
 			index=get_index(utc,sample_bin)
+			print H_dm
+			print time_extract
+			t = time.time()
 			out_queue.put([beam,sample_bin,H_dm,H_w,H_sn,dm,width,sn,snr_0,
 				(ch1/all_ch)*100,(ch2/all_ch)*100,(ch3/all_ch)*100,index,utc,
 				mean_f1,mean_f2,mean_f3,mean_rst,std_f1,std_f2,std_f3,std_rst,
 				sn_highrms,len(n_mask),Mod_index,Mod_tscrunch])
+			print time.time() - t
 			delete_block()
 			#return beam,sample_bin,H_dm,H_w,H_sn,dm,width,sn,snr_0,(ch1/all_ch)*100,(ch2/all_ch)*100,(ch3/all_ch)*100,index,utc,mean_f1,mean_f2,mean_f3,mean_rst,std_f1,std_f2,std_f3,std_rst,sn_highrms,len(n_mask),Mod_index,Mod_tscrunch
 
@@ -272,4 +277,3 @@ if __name__=="__main__":
 			processing
 
 """
-import numpy as np

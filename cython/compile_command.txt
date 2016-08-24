@@ -1,1 +1,1 @@
-gcc -shared -pthread -fPIC -fwrapv -O2 -Wall -fno-strict-aliasing -I/usr/include/python2.6 -I/home/observer/Python/env/observer_general/lib/python2.6/site-packages/numpy/core/include -o wrapper.so wrapper.c
+gcc -shared -pthread -fPIC -fwrapv -O3 -Wall -fno-strict-aliasing -I/usr/include/python2.6 -I/home/observer/Python/env/observer_general/lib/python2.6/site-packages/numpy/core/include -o wrapper.so wrapper.c

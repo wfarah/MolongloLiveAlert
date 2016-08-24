@@ -1,10 +1,11 @@
 import numpy as np
 from sigpyproc.Readers import FilReader
 from multiprocessing import Pool
-import datetime,os
-from wrapper import wrapper
-from wrapper import dedisp_wrapper
-
+import datetime,os,time
+from wrapper import dedisp
+from wrapper import dedisp_norm_base_conv
+from wrapper import load_block
+from wrapper import delete_block
 
 """Globals"""
 F1=range(7,13)
@@ -95,14 +96,15 @@ def get_power(event):
 	ch3_sum=ch3.sum()
 	ch4_sum=ch4.sum()
 	all_ch=event.sum()
+	#print ch1_sum,ch2_sum,ch3_sum,all_ch
 	return ch1_sum,ch2_sum,ch3_sum,ch4_sum,all_ch
 
 
 
 
-def HUNTER(fil_block,dm,w,dispersion_delay):
+def HUNTER(fil_block,H_dm,w,dispersion_delay):
 	"""Hunts around dm and w (units power of 2, 2**w) for the best dm and width, and returns the refined dm and width, the SNR, SNR at 0 dm, start and end event gates"""
-	dm_index=np.where(dm_list==dm)[0]
+	dm_index=np.where(dm_list==H_dm)[0]
 	if not dm_index:
 		dm_range=np.linspace(dm*0.85,dm*1.15,15)
 		print "DM is not on HEIMDAL DM list"
@@ -118,15 +120,20 @@ def HUNTER(fil_block,dm,w,dispersion_delay):
 	sn=np.zeros(len(width_range)*len(dm_range))
 	nstart=np.zeros(len(width_range)*len(dm_range))
 	nend=np.zeros(len(width_range)*len(dm_range))
-
+	print width_range
 	i=0
+	#print dm_range
 	for dm in dm_range:
 		for width in width_range:
 			dis=fil_block.dedisperse(dm)
 			s=dis.sum(axis=0)
+			#if dm==dm_range[4]: print s
 			s=remove_baseline(s)
 			d=normalize(s,how="mad")
 			c=convolve(d,width)
+			c = dedisp_norm_base_conv(width,dm)
+			if dm == dm_range[4]:
+				print c.max()
 			sn[i]=c.max()/np.sqrt(width)
 			nstart[i]=c.argmax()
 			nend[i]=c.argmax()+width
@@ -146,12 +153,16 @@ def HUNTER(fil_block,dm,w,dispersion_delay):
 
 def get_snr0(fil_block,width,dispersion_delay):
 	"""Returns the sn at 0 zero DM and specificied width, for a given Filterbank file block, and for a given dispersion delay in units of bins"""
-	dis=fil_block.dedisperse(0) #For SN at 0 dm
-	s=dis.sum(axis=0)
-	s=remove_baseline(s)
-	d=normalize(s,how="mad")
-	c=convolve(d,width,backstep,dispersion_delay)
+	#dis=fil_block.dedisperse(0) #For SN at 0 dm
+	#s=dis.sum(axis=0)
+	#s=remove_baseline(s)
+	#d=normalize(s,how="mad")
+	#c=convolve(d,width,backstep,dispersion_delay)
+	c = dedisp_norm_base_conv(width,0.0)
+	print c.max()
 	sn0=c.max()/np.sqrt(width)
+	print "sn0: "
+	print sn0
 	return sn0
 
 def mod_index(event,t_crunch=False):    #event should be median subtracted, crunches in time when t_crunch is True
@@ -178,28 +189,41 @@ def get_snr(time_series,start,width): #x is a time series
 	return sn
 
 
+def timeToExtract(H_w,H_dm):
+	"""Return the time to extract in units of bins"""
+	dispersion_delay=(31.25*8.3*H_dm)/(0.840)**3
+	dispersion_delay=np.ceil(dispersion_delay/655.36)
+	w=2**H_w
+	min_afterEvent=300
+	time_extract=np.max([min_afterEvent,(dispersion_delay+w)*2])
+	print time_extract,dispersion_delay
+	return time_extract,dispersion_delay
+
 
 def process_candidate(in_queue,out_queue):
 	print "%s Initiated" %os.getpid()
 	while True:
 		candidate = in_queue.get()
-		print "%s processing" %os.getpid()
+		if isinstance(candidate,list) and len(candidate)==2:
+			utc = candidate[1]
+			candidate = candidate[0]
 		H_sn , H_w, H_dm = candidate[0],candidate[3],candidate[5]
 		sample_bin, H_t, beam = int(candidate[1]), float(candidate[2]), int(candidate[12])
 		direc="/data/mopsr/archives/"+utc+"/BEAM_"+str(int(beam)).zfill(3)+"/"+utc+".fil"
 		fil_file=FilReader(direc)
-		dispersion_delay=(31.25*8.3*H_dm)/(0.840)**3
-		dispersion_delay=np.ceil(dispersion_delay/655.36)
-		w=2**H_w
-		min_afterEvent=300
-		time_extract=np.max([min_afterEvent,(dispersion_delay+w)*2])
+		time_extract,dispersion_delay = timeToExtract(H_w,H_dm)
 		fil_block=fil_file.readBlock(sample_bin-backstep,int(backstep+time_extract))
 		dis=fil_block.dedisperse(H_dm)
-		av_p=np.mean(dis)
-		dis=dis-np.median(dis)
+		load_block(direc,sample_bin-backstep,int(backstep+time_extract))
+		#dis = dedisp(H_dm)
+		print "median: %i" %np.median(dis)
+		out_queue.put(fil_block)
+		dis = dis-np.median(dis)
+		out_queue.put(dis)
 		event=dis[:,backstep-(2**H_w)/2:backstep+(2**H_w)/2]
 		ch1,ch2,ch3,ch4,all_ch=get_power(event)
 		if (ch1/all_ch>0.7 or ch2/all_ch>0.7 or ch3/all_ch>0.7 or ch1/all_ch+ch2/all_ch>0.9 or ch1/all_ch+ch3/all_ch>0.9 or ch2/all_ch+ch3/all_ch>0.9):
+			delete_block()
 			pass
 		else:
 			dm,width,sn,snr_0,nstart,nend=HUNTER(fil_block,H_dm,H_w,dispersion_delay)
@@ -210,7 +234,8 @@ def process_candidate(in_queue,out_queue):
 			dis=fil_block.dedisperse(dm)
 			rms_freq=np.hstack((dis[:,:nstart],dis[:,nend:])).std(axis=1)   #RMS as function of frequency channels (without event)
 			rms_freq -= np.median(rms_freq)
-			rms_freq /= MAD(rms_freq,ax=None) #Normalized
+			rms_freq /= MAD(rms_freq,ax=None)
+
 			rms_mask=np.where(rms_freq<3)[0]
 			n_mask=np.where(rms_freq>3)[0]
 			sn_highrms=get_snr(dis[rms_mask].sum(axis=0),nstart,width)    #Calculate snr of non-high rms channels
@@ -226,7 +251,14 @@ def process_candidate(in_queue,out_queue):
 			event=dis[:,nstart:nend]
 			ch1,ch2,ch3,ch4,all_ch=get_power(event)
 			index=get_index(utc,sample_bin)
-			out_queue.put([beam,sample_bin,H_dm,H_w,H_sn,dm,width,sn,snr_0,(ch1/all_ch)*100,(ch2/all_ch)*100,(ch3/all_ch)*100,index,utc,mean_f1,mean_f2,mean_f3,mean_rst,std_f1,std_f2,std_f3,std_rst,sn_highrms,len(n_mask),Mod_index,Mod_tscrunch])
+			print time_extract
+			t = time.time()
+			out_queue.put([beam,sample_bin,H_dm,H_w,H_sn,dm,width,sn,snr_0,
+				(ch1/all_ch)*100,(ch2/all_ch)*100,(ch3/all_ch)*100,index,utc,
+				mean_f1,mean_f2,mean_f3,mean_rst,std_f1,std_f2,std_f3,std_rst,
+				sn_highrms,len(n_mask),Mod_index,Mod_tscrunch])
+			print time.time() - t
+			delete_block()
 			#return beam,sample_bin,H_dm,H_w,H_sn,dm,width,sn,snr_0,(ch1/all_ch)*100,(ch2/all_ch)*100,(ch3/all_ch)*100,index,utc,mean_f1,mean_f2,mean_f3,mean_rst,std_f1,std_f2,std_f3,std_rst,sn_highrms,len(n_mask),Mod_index,Mod_tscrunch
 
 def get_candidates():

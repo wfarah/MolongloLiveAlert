@@ -86,7 +86,7 @@ def getBoresight(utc):
 
 
 def getObsInfo(utc):
-	"""Funtion that returns obs.info
+	"""Funtion that reads obs.info file from obs directory
 
 	Args:
 		utc (str): format yyyy-mm-dd-hh-mm-ss should be the start UTC of observation!
@@ -128,15 +128,15 @@ def realTimePlot(queue):
 
 
 ###############################################################################
-####################### 	     MAIN               #######################
+#######################      	     MAIN               #######################
 ###############################################################################
 
-all_candidates=np.loadtxt("/data/mopsr/results/2016-07-16-08:16:21/all_candidates.dat")
 if __name__=="__main__":
+	all_candidates=np.loadtxt("/data/mopsr/results/2016-07-16-08:16:21/all_candidates.dat")
 	start_utc = "2016-07-16-08:16:21"
-	boresight_ra , boresight_dec = getBoresight(start_utc)
-	utc_now = datetime.utcnow()
-	utc_now = datetimeToStr(utc_now)
+	obs_info = getObsInfo(start_utc)
+	boresight_ra , boresight_dec = obs_info['RA'] , obs_info['DEC'] 
+	utc_now = datetimeToStr(datetime.utcnow())
 	if pulsar_monitor_on:
 		pulsar_list = Stage1Filter.getPotentialPulsars(utc_now,boresight_ra,boresight_dec)
 		
