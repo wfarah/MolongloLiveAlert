@@ -104,7 +104,18 @@ void convolve(float * time_series, int ndat, int width, float * ans){
     }
 }
 
-
+/* Convolves 1d array with boxcar, given start and number of samples to
+ * convolve. Used for sn at dm = 0 in offline mode */
+void convolve_sn0(float * time_series, int ndat, int width,
+        int nbin_start, int nbin_search, float * ans){
+    int i,j;
+    for (i=0;i<ndat;i++) ans[i]=0.0;
+    for (i=nbin_start;i<nbin_start+nbin_search;i++){
+    float ss=0.0;
+    for (j=0;j<width;j++) ss+=time_series[i+j];
+    ans[i]=ss;
+    }
+}
 
 /* Function that returns list of dispersion delays */
 void dm_delay(float f0, float df, float dm, int nchans, int *d_list){

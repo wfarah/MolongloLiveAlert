@@ -8,14 +8,13 @@ ext_modules = [
 ]
 """
 ext_modules = [
-    Extension("wrapper", ["wrapper.pyx"],include_dirs=[numpy.get_include()])
+    Extension("wrapper", ["wrapper.pyx"],include_dirs=[numpy.get_include()],extra_compile_args=["-O3"])
 ]
 
 setup(
   cmdclass = {'build_ext': build_ext},
   ext_modules = ext_modules,
   include_dirs=[numpy.get_include()],
-  extra_compile_args=["-O3"]
 )
 
 #$python setup.py build_ext --inplace

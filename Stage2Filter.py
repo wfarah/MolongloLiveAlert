@@ -1,9 +1,14 @@
 import numpy as np
 from sigpyproc.Readers import FilReader
 from multiprocessing import Pool
-import datetime,os
-from wrapper import wrapper
-from wrapper import dedisp_wrapper
+import datetime,os,time
+from wrapper import dedisp
+from wrapper import dedisp_norm_base_conv
+from wrapper import norm_base_conv_sn0
+from wrapper import load_block
+from wrapper import delete_block
+
+
 
 
 """Globals"""
@@ -122,11 +127,12 @@ def HUNTER(fil_block,dm,w,dispersion_delay):
 	i=0
 	for dm in dm_range:
 		for width in width_range:
-			dis=fil_block.dedisperse(dm)
-			s=dis.sum(axis=0)
-			s=remove_baseline(s)
-			d=normalize(s,how="mad")
-			c=convolve(d,width)
+			#dis=fil_block.dedisperse(dm)
+			#s=dis.sum(axis=0)
+			#s=remove_baseline(s)
+			#d=normalize(s,how="mad")
+			#c=convolve(d,width)
+            c = dedisp_norm_base_conv(width,dm)
 			sn[i]=c.max()/np.sqrt(width)
 			nstart[i]=c.argmax()
 			nend[i]=c.argmax()+width
@@ -146,12 +152,13 @@ def HUNTER(fil_block,dm,w,dispersion_delay):
 
 def get_snr0(fil_block,width,dispersion_delay):
 	"""Returns the sn at 0 zero DM and specificied width, for a given Filterbank file block, and for a given dispersion delay in units of bins"""
-	dis=fil_block.dedisperse(0) #For SN at 0 dm
-	s=dis.sum(axis=0)
-	s=remove_baseline(s)
-	d=normalize(s,how="mad")
-	c=convolve(d,width,backstep,dispersion_delay)
-	sn0=c.max()/np.sqrt(width)
+	#dis=fil_block.dedisperse(0) #For SN at 0 dm
+	#s=dis.sum(axis=0)
+	#s=remove_baseline(s)
+	#d=normalize(s,how="mad")
+	#c=convolve(d,width,backstep,dispersion_delay)
+	c = norm_base_conv_sn0(width,backstep,dispersion_delay)
+    sn0=c.max()/np.sqrt(width)
 	return sn0
 
 def mod_index(event,t_crunch=False):    #event should be median subtracted, crunches in time when t_crunch is True
@@ -183,7 +190,9 @@ def process_candidate(in_queue,out_queue):
 	print "%s Initiated" %os.getpid()
 	while True:
 		candidate = in_queue.get()
-		print "%s processing" %os.getpid()
+        if len(candidate) == 2:
+            utc = candidate[1]
+            candidate = candidate[0]
 		H_sn , H_w, H_dm = candidate[0],candidate[3],candidate[5]
 		sample_bin, H_t, beam = int(candidate[1]), float(candidate[2]), int(candidate[12])
 		direc="/data/mopsr/archives/"+utc+"/BEAM_"+str(int(beam)).zfill(3)+"/"+utc+".fil"
@@ -193,14 +202,18 @@ def process_candidate(in_queue,out_queue):
 		w=2**H_w
 		min_afterEvent=300
 		time_extract=np.max([min_afterEvent,(dispersion_delay+w)*2])
+
 		fil_block=fil_file.readBlock(sample_bin-backstep,int(backstep+time_extract))
-		dis=fil_block.dedisperse(H_dm)
+        load_block(direc,sample_bin-backstep,int(backstep+time_extract))
+		dis = dedisp(H_dm)
+        dis=fil_block.dedisperse(H_dm)
 		av_p=np.mean(dis)
 		dis=dis-np.median(dis)
 		event=dis[:,backstep-(2**H_w)/2:backstep+(2**H_w)/2]
 		ch1,ch2,ch3,ch4,all_ch=get_power(event)
 		if (ch1/all_ch>0.7 or ch2/all_ch>0.7 or ch3/all_ch>0.7 or ch1/all_ch+ch2/all_ch>0.9 or ch1/all_ch+ch3/all_ch>0.9 or ch2/all_ch+ch3/all_ch>0.9):
-			pass
+			delete_block()
+            pass
 		else:
 			dm,width,sn,snr_0,nstart,nend=HUNTER(fil_block,H_dm,H_w,dispersion_delay)
 			if sn == -1:
@@ -226,6 +239,7 @@ def process_candidate(in_queue,out_queue):
 			event=dis[:,nstart:nend]
 			ch1,ch2,ch3,ch4,all_ch=get_power(event)
 			index=get_index(utc,sample_bin)
+            delete_block()
 			out_queue.put([beam,sample_bin,H_dm,H_w,H_sn,dm,width,sn,snr_0,(ch1/all_ch)*100,(ch2/all_ch)*100,(ch3/all_ch)*100,index,utc,mean_f1,mean_f2,mean_f3,mean_rst,std_f1,std_f2,std_f3,std_rst,sn_highrms,len(n_mask),Mod_index,Mod_tscrunch])
 			#return beam,sample_bin,H_dm,H_w,H_sn,dm,width,sn,snr_0,(ch1/all_ch)*100,(ch2/all_ch)*100,(ch3/all_ch)*100,index,utc,mean_f1,mean_f2,mean_f3,mean_rst,std_f1,std_f2,std_f3,std_rst,sn_highrms,len(n_mask),Mod_index,Mod_tscrunch
 
